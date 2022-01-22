@@ -1,0 +1,1 @@
+hedera-sdk-py==2.6.0
