@@ -1,4 +1,5 @@
 from typing import Optional
+from enum import Enum
 
 from hedera import (
     AccountBalance,
@@ -18,6 +19,16 @@ from config import DeploymentEnv, config
 from utils import get_logger
 
 logger = get_logger(__name__)
+
+
+class HbarDenominations(Enum):
+    GIGABAR = 1_000_000_000
+    MEGABAR = 1_000_000
+    KILOBAR = 1_000
+    HBAR = 1
+    MILLIBAR = 1_000
+    MICROBAR = 1_000_000
+    TINYBAR = 100_000_000
 
 
 class Hedera:
