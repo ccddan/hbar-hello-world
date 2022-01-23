@@ -1,14 +1,16 @@
+from typing import Optional
+
 from hedera import (
-    Hbar,
+    AccountBalance,
+    AccountBalanceQuery,
     AccountCreateTransaction,
     AccountId,
     Client,
+    Hbar,
     PrivateKey,
     PublicKey,
-    AccountBalance,
-    AccountBalanceQuery,
-    TransactionResponse,
     TransactionReceipt,
+    TransactionResponse,
 )
 
 from config import DeploymentEnv, config
@@ -19,13 +21,29 @@ logger = get_logger(__name__)
 
 class Hedera:
     @staticmethod
-    def get_client() -> Client:
+    def load_account_id(id: Optional[str] = None) -> AccountId:
+        return AccountId.fromString(id if id else config["account"]["id"])
+
+    @staticmethod
+    def load_private_key(private_key: Optional[str] = None) -> PrivateKey:
+        return PrivateKey.fromString(
+            private_key if private_key else config["account"]["private_key"]
+        )
+
+    @staticmethod
+    def get_client(
+        account_id: Optional[AccountId] = None, private_key: Optional[PrivateKey] = None
+    ) -> Client:
         logger.debug(f"Hedera::get_client - create account_id")
-        account_id: AccountId = AccountId.fromString(config["account"]["id"])
+        _account_id: AccountId = (
+            account_id if account_id else Hedera.load_account_from_id()
+        )
 
         logger.debug(f"Hedera::get_client - create account_id")
-        private_key: PrivateKey = PrivateKey.fromString(
-            config["account"]["private_key"]
+        private_key: PrivateKey = (
+            private_key
+            if private_key
+            else Hedera.load_private_key(config["account"]["private_key"])
         )
 
         logger.debug(f"Hedera::get_client - create client")
@@ -36,7 +54,7 @@ class Hedera:
         )
 
         logger.debug(f"Hedera::get_client - set operator")
-        client.setOperator(account_id, private_key)
+        client.setOperator(_account_id, private_key)
 
         logger.debug(f"Hedera::get_client - client: {client.toString()}")
         return client
