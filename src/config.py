@@ -1,7 +1,7 @@
 from enum import Enum
 from os import environ, getenv
 
-from utils import get_logger
+from utils import get_logger, APP_LOG_LEVEL
 
 logger = get_logger(__name__)
 
@@ -22,6 +22,7 @@ if DEPLOYMENT_ENV == DeploymentEnv.Development.value:
 
 __config = {
     "env": DEPLOYMENT_ENV,
+    "log_level": APP_LOG_LEVEL,
     "network": environ["HEDERA_NETWORK"],
     "account": {
         "id": environ["OPERATOR_ID"],
