@@ -77,7 +77,6 @@ class HederaAccount:
             self.account_id = account_id
             self.private_key = private_key
             self.public_key = self.private_key.getPublicKey()
-            self.tx_receipt: Optional[TransactionReceipt] = None
 
         else:
             self.private_key: PrivateKey = PrivateKey.generate()
@@ -90,8 +89,8 @@ class HederaAccount:
                 .execute(client)
             )
 
-            self.tx_receipt: TransactionReceipt = tx_resp.getReceipt(self.client)
-            self.account_id: AccountId = self.tx_receipt.accountId
+            tx_receipt: TransactionReceipt = tx_resp.getReceipt(self.client)
+            self.account_id: AccountId = tx_receipt.accountId
             logger.debug(
                 f"HederaAccount::init - new account id: {self.account_id.toString()}"
             )
