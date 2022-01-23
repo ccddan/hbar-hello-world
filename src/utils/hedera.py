@@ -61,23 +61,39 @@ class Hedera:
 
 
 class HederaAccount:
-    def __init__(self, client) -> None:
-        self.private_key: PrivateKey = PrivateKey.generate()
-        self.public_key: PublicKey = self.private_key.getPublicKey()
+    def __init__(
+        self,
+        client,
+        account_id: Optional[AccountId] = None,
+        private_key: Optional[PrivateKey] = None,
+    ) -> None:
         self.client: Client = client
 
-        tx_resp: TransactionResponse = (
-            AccountCreateTransaction()
-            .setKey(self.public_key)
-            .setInitialBalance(Hbar.fromTinybars(1000))
-            .execute(client)
-        )
+        if account_id:
+            logger.debug(
+                f"HederaAccount::init - existent account id: {account_id.toString()}"
+            )
+            self.account_id = account_id
+            self.private_key = private_key
+            self.public_key = self.private_key.getPublicKey()
+            self.tx_receipt: Optional[TransactionReceipt] = None
 
-        self.tx_receipt: TransactionReceipt = tx_resp.getReceipt(self.client)
-        self.account_id: AccountId = self.tx_receipt.accountId
-        logger.debug(
-            f"HederaAccount::init - new account id: {self.account_id.toString()}"
-        )
+        else:
+            self.private_key: PrivateKey = PrivateKey.generate()
+            self.public_key: PublicKey = self.private_key.getPublicKey()
+
+            tx_resp: TransactionResponse = (
+                AccountCreateTransaction()
+                .setKey(self.public_key)
+                .setInitialBalance(Hbar.fromTinybars(1000))
+                .execute(client)
+            )
+
+            self.tx_receipt: TransactionReceipt = tx_resp.getReceipt(self.client)
+            self.account_id: AccountId = self.tx_receipt.accountId
+            logger.debug(
+                f"HederaAccount::init - new account id: {self.account_id.toString()}"
+            )
 
     def get_balance(self):
         balance: AccountBalance = (
