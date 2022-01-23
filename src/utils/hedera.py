@@ -104,3 +104,12 @@ class HederaAccount:
         )
 
         return balance
+
+    def __iter__(self):
+        yield "account_id", self.account_id.toString()
+        yield "private_key", f"{self.private_key.toString()[:5]}...{self.private_key.toString()[-5:]}"
+        yield "public_key", self.public_key.toString()
+        yield "balance", self.get_balance().hbars.toString()
+
+    def __str__(self) -> str:
+        return f"{dict(self)}"
