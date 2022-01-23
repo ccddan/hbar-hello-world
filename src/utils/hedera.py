@@ -11,6 +11,7 @@ from hedera import (
     PublicKey,
     TransactionReceipt,
     TransactionResponse,
+    TransferTransaction,
 )
 
 from config import DeploymentEnv, config
@@ -105,6 +106,36 @@ class HederaAccount:
 
         return balance
 
+    def transfer(
+        self, tinybars: int, account_id: AccountId, memo: Optional[str] = None
+    ) -> TransactionResponse:
+        logger.debug(
+            f"HederaAccount::transfer - from={self.account_id.toString()}, to={account_id.toString()}"
+        )
+        logger.debug(f"HederaAccount::transfers - tinybars: {tinybars}")
+        logger.debug(f"HederaAccount::transfers - memo: {memo}")
+
+        amount: Hbar = Hbar.fromTinybars(tinybars)
+        tx: TransferTransaction = (
+            TransferTransaction()
+            .addHbarTransfer(self.account_id, amount.negated())
+            .addHbarTransfer(account_id, amount)
+        )
+
+        if memo:
+            tx.setTransactionMemo(memo)
+
+        txr: TransactionResponse = tx.execute(self.client)
+
+        return txr
+
+    def tx_status(self, txr: TransactionResponse):
+        return txr.getReceipt(self.client).status
+
+    def tx_receipt(self, txr: TransactionResponse):
+        return txr.getReceipt(self.client)
+
+    # Overridden methods
     def __iter__(self):
         yield "account_id", self.account_id.toString()
         yield "private_key", f"{self.private_key.toString()[:5]}...{self.private_key.toString()[-5:]}"

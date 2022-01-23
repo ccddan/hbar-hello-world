@@ -19,3 +19,16 @@ logger.info(f"Root account: {root_account}")
 # Create a new account
 new_account: HederaAccount = HederaAccount(client)
 logger.info(f"New account: {new_account}")
+
+
+logger.info("\n\n")
+logger.info("Tranfer from root account to new account")
+txr = root_account.transfer(
+    tinybars=100_000, account_id=new_account.account_id, memo="welcome"
+)
+logger.info(f"Transfer status: {root_account.tx_status(txr).toString()}")
+logger.info(f"Transfer cost: {root_account.tx_receipt(txr).toString()}")
+
+logger.info("\n\n")
+logger.info(f"root account balance: {root_account.get_balance().hbars.toString()}")
+logger.info(f"new account balance: {new_account.get_balance().hbars.toString()}")
