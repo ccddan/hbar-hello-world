@@ -1,12 +1,19 @@
 from os import environ, getenv
 from utils import get_logger
+from enum import Enum
 
 logger = get_logger(__name__)
 
-DEPLOYMENT_ENV = getenv("DEPLOYMENT_ENV", "production")
+
+class DeploymentEnv(Enum):
+    Development = "development"
+    Production = "production"
+
+
+DEPLOYMENT_ENV = getenv("DEPLOYMENT_ENV", DeploymentEnv.Production.value)
 logger.debug(f"Deployment env: {DEPLOYMENT_ENV}")
 
-if DEPLOYMENT_ENV == "development":
+if DEPLOYMENT_ENV == DeploymentEnv.Development.value:
     logger.info(f"Load .env file")
     from dotenv import load_dotenv
 
