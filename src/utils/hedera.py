@@ -102,3 +102,5 @@ class HederaAccount:
         logger.debug(
             f"HederaAccount::get_balance - balance: {balance.hbars.toString()}"
         )
+
+        return balance
