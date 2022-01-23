@@ -3,5 +3,5 @@
   "python.terminal.activateEnvironment": false,
   "python.formatting.provider": "black",
   "python.pythonPath": "${env:PYTHONPATH}",
-  "cSpell.words": ["dotenv", "HEDERA"]
+  "cSpell.words": ["dotenv", "Hbar", "hbars", "HEDERA"]
 }
