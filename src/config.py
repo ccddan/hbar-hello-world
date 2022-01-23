@@ -1,6 +1,7 @@
-from os import environ, getenv
-from utils import get_logger
 from enum import Enum
+from os import environ, getenv
+
+from utils import get_logger
 
 logger = get_logger(__name__)
 
