@@ -96,6 +96,7 @@ class HederaAccount:
             self.account_id = account_id
             self.private_key = private_key
             self.public_key = self.private_key.getPublicKey()
+            self.node_id: Optional[AccountId] = None
 
         else:
             self.private_key: PrivateKey = PrivateKey.generate()
@@ -107,6 +108,7 @@ class HederaAccount:
                 .setInitialBalance(Hbar.fromTinybars(initial_balance))
                 .execute(client)
             )
+            self.node_id: AccountId = tx_resp.nodeId
 
             tx_receipt: TransactionReceipt = tx_resp.getReceipt(self.client)
             self.account_id: AccountId = tx_receipt.accountId
@@ -159,6 +161,7 @@ class HederaAccount:
         yield "private_key", f"{self.private_key.toString()[:5]}...{self.private_key.toString()[-5:]}"
         yield "public_key", self.public_key.toString()
         yield "balance", self.get_balance().hbars.toString()
+        yield "node_id", self.node_id.toString() if self.node_id else self.node_id
 
     def __str__(self) -> str:
         return f"{dict(self)}"
