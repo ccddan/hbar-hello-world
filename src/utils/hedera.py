@@ -80,6 +80,7 @@ class HederaAccount:
         client,
         account_id: Optional[AccountId] = None,
         private_key: Optional[PrivateKey] = None,
+        initial_balance: Optional[int] = 1_000_000,
     ) -> None:
         self.client: Client = client
 
@@ -98,7 +99,7 @@ class HederaAccount:
             tx_resp: TransactionResponse = (
                 AccountCreateTransaction()
                 .setKey(self.public_key)
-                .setInitialBalance(Hbar.fromTinybars(1000))
+                .setInitialBalance(Hbar.fromTinybars(initial_balance))
                 .execute(client)
             )
 

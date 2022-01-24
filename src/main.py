@@ -21,7 +21,7 @@ logger.info(f"Root account: {root_account}")
 logger.info("\n\n")
 
 # Create a new account
-new_account: HederaAccount = HederaAccount(client)
+new_account: HederaAccount = HederaAccount(client, initial_balance=900_000)
 logger.info(f"New account: {new_account}")
 logger.info("\n\n")
 
