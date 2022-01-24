@@ -88,6 +88,11 @@ class HederaAccount:
             logger.debug(
                 f"HederaAccount::init - existent account id: {account_id.toString()}"
             )
+
+            if not private_key:
+                raise Exception(
+                    "When loading an existing account, 'private_key' is required"
+                )
             self.account_id = account_id
             self.private_key = private_key
             self.public_key = self.private_key.getPublicKey()
