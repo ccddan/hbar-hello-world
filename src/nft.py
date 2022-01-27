@@ -1,6 +1,6 @@
 from config import config
 from utils import get_logger
-from utils.hedera import Hedera, HederaAccount
+from utils.hedera import HbarDenominations, Hedera, HederaAccount
 
 logger = get_logger(__name__)
 
@@ -24,7 +24,7 @@ logger.info("\n\n")
 
 
 logger.info("Tranfer HBAR from root account to new account")
-tinybars_transfer_amount = 1_000
+tinybars_transfer_amount = HbarDenominations.TINYBAR.value  # 1 Hbar
 txr = root_account.transfer(
     tinybars=tinybars_transfer_amount, account_id=new_account.account_id, memo="welcome"
 )
