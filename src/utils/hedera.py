@@ -68,7 +68,7 @@ class Hedera:
         logger.debug(f"Hedera::get_client - set operator")
         client.setOperator(_account_id, private_key)
 
-        client.setMaxTransactionFee(Hbar.fromTinybars(500_000))
+        client.setMaxTransactionFee(Hbar(HbarDenominations.HBAR.value))
 
         logger.debug(f"Hedera::get_client - client: {client.toString()}")
         return client
