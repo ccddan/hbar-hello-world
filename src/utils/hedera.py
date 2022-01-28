@@ -68,6 +68,8 @@ class Hedera:
         logger.debug(f"Hedera::get_client - set operator")
         client.setOperator(_account_id, private_key)
 
+        client.setMaxTransactionFee(Hbar(HbarDenominations.HBAR.value))
+
         logger.debug(f"Hedera::get_client - client: {client.toString()}")
         return client
 
@@ -78,6 +80,7 @@ class HederaAccount:
         client,
         account_id: Optional[AccountId] = None,
         private_key: Optional[PrivateKey] = None,
+        initial_balance: Optional[int] = 1_000_000,
     ) -> None:
         self.client: Client = client
 
@@ -85,9 +88,15 @@ class HederaAccount:
             logger.debug(
                 f"HederaAccount::init - existent account id: {account_id.toString()}"
             )
+
+            if not private_key:
+                raise Exception(
+                    "When loading an existing account, 'private_key' is required"
+                )
             self.account_id = account_id
             self.private_key = private_key
             self.public_key = self.private_key.getPublicKey()
+            self.node_id: Optional[AccountId] = None
 
         else:
             self.private_key: PrivateKey = PrivateKey.generate()
@@ -96,9 +105,10 @@ class HederaAccount:
             tx_resp: TransactionResponse = (
                 AccountCreateTransaction()
                 .setKey(self.public_key)
-                .setInitialBalance(Hbar.fromTinybars(1000))
+                .setInitialBalance(Hbar.fromTinybars(initial_balance))
                 .execute(client)
             )
+            self.node_id: AccountId = tx_resp.nodeId
 
             tx_receipt: TransactionReceipt = tx_resp.getReceipt(self.client)
             self.account_id: AccountId = tx_receipt.accountId
@@ -151,6 +161,7 @@ class HederaAccount:
         yield "private_key", f"{self.private_key.toString()[:5]}...{self.private_key.toString()[-5:]}"
         yield "public_key", self.public_key.toString()
         yield "balance", self.get_balance().hbars.toString()
+        yield "node_id", self.node_id.toString() if self.node_id else self.node_id
 
     def __str__(self) -> str:
         return f"{dict(self)}"
