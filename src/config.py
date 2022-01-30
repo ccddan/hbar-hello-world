@@ -3,7 +3,7 @@ from os import environ, getenv
 
 from utils import get_logger, APP_LOG_LEVEL
 
-logger = get_logger(__name__)
+logger = get_logger(ctx=__name__)
 
 
 class DeploymentEnv(Enum):

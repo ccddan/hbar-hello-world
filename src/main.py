@@ -5,7 +5,7 @@ from hedera import TopicId
 from utils.hedera import Hedera, HederaAccount
 from utils.topic import TopicMessage, Topic, TopicSubscription
 
-logger = get_logger(__name__)
+logger = get_logger(ctx=__name__)
 
 logger.info(f"Config: {config}")
 

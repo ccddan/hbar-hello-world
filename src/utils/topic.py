@@ -13,7 +13,7 @@ from hedera import (
 
 from utils import get_logger
 
-logger = get_logger(__name__)
+logger = get_logger(ctx=__name__)
 
 
 class Topic:
