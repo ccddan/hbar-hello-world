@@ -18,7 +18,7 @@ from hedera import (
 from config import DeploymentEnv, config
 from utils import get_logger
 
-logger = get_logger(__name__)
+logger = get_logger(ctx=__name__)
 
 
 class HbarDenominations(Enum):
@@ -44,28 +44,29 @@ class Hedera:
 
     @staticmethod
     def get_client(
-        account_id: Optional[AccountId] = None, private_key: Optional[PrivateKey] = None
+        account_id: Optional[AccountId] = None,
+        private_key: Optional[PrivateKey] = None
     ) -> Client:
-        logger.debug(f"Hedera::get_client - create account_id")
+        logger.debug("Hedera::get_client - create account_id")
         _account_id: AccountId = (
-            account_id if account_id else Hedera.load_account_from_id()
+            account_id if account_id else Hedera.load_account_id()
         )
 
-        logger.debug(f"Hedera::get_client - create account_id")
+        logger.debug("Hedera::get_client - create account_id")
         private_key: PrivateKey = (
             private_key
             if private_key
             else Hedera.load_private_key(config["account"]["private_key"])
         )
 
-        logger.debug(f"Hedera::get_client - create client")
+        logger.debug("Hedera::get_client - create client")
         client: Client = (
             Client.forTestnet()
             if config["env"] == DeploymentEnv.Development.value
             else Client.forMainnet()
         )
 
-        logger.debug(f"Hedera::get_client - set operator")
+        logger.debug("Hedera::get_client - set operator")
         client.setOperator(_account_id, private_key)
 
         client.setMaxTransactionFee(Hbar(HbarDenominations.HBAR.value))
@@ -86,13 +87,16 @@ class HederaAccount:
 
         if account_id:
             logger.debug(
-                f"HederaAccount::init - existent account id: {account_id.toString()}"
+                f"""HederaAccount::init - existent account id: \
+                {account_id.toString()}"""
             )
 
             if not private_key:
                 raise Exception(
-                    "When loading an existing account, 'private_key' is required"
+                    """When loading an existing account, \
+                    'private_key' is required"""
                 )
+
             self.account_id = account_id
             self.private_key = private_key
             self.public_key = self.private_key.getPublicKey()
@@ -113,15 +117,19 @@ class HederaAccount:
             tx_receipt: TransactionReceipt = tx_resp.getReceipt(self.client)
             self.account_id: AccountId = tx_receipt.accountId
             logger.debug(
-                f"HederaAccount::init - new account id: {self.account_id.toString()}"
+                f"""HederaAccount::init - new account id: \
+                {self.account_id.toString()}"""
             )
 
     def get_balance(self):
         balance: AccountBalance = (
-            AccountBalanceQuery().setAccountId(self.account_id).execute(self.client)
+            AccountBalanceQuery()
+            .setAccountId(self.account_id)
+            .execute(self.client)
         )
         logger.debug(
-            f"HederaAccount::get_balance - balance: {balance.hbars.toString()}"
+            f"""HederaAccount::get_balance - balance: \
+            {balance.hbars.toString()}"""
         )
 
         return balance
@@ -130,7 +138,8 @@ class HederaAccount:
         self, tinybars: int, account_id: AccountId, memo: Optional[str] = None
     ) -> TransactionResponse:
         logger.debug(
-            f"HederaAccount::transfer - from={self.account_id.toString()}, to={account_id.toString()}"
+            f"""HederaAccount::transfer - from={self.account_id.toString()}, \
+            to={account_id.toString()}"""
         )
         logger.debug(f"HederaAccount::transfers - tinybars: {tinybars}")
         logger.debug(f"HederaAccount::transfers - memo: {memo}")
@@ -158,10 +167,12 @@ class HederaAccount:
     # Overridden methods
     def __iter__(self):
         yield "account_id", self.account_id.toString()
-        yield "private_key", f"{self.private_key.toString()[:5]}...{self.private_key.toString()[-5:]}"
+        yield "private_key", f"""{self.private_key.toString()[:5]}...\
+        {self.private_key.toString()[-5:]}"""
         yield "public_key", self.public_key.toString()
         yield "balance", self.get_balance().hbars.toString()
-        yield "node_id", self.node_id.toString() if self.node_id else self.node_id
+        yield "node_id", f"""\
+        {self.node_id.toString() if self.node_id else self.node_id}"""
 
     def __str__(self) -> str:
         return f"{dict(self)}"

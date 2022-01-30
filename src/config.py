@@ -15,7 +15,7 @@ DEPLOYMENT_ENV = getenv("DEPLOYMENT_ENV", DeploymentEnv.Production.value)
 logger.debug(f"Deployment env: {DEPLOYMENT_ENV}")
 
 if DEPLOYMENT_ENV == DeploymentEnv.Development.value:
-    logger.info(f"Load .env file")
+    logger.info("Load .env file")
     from dotenv import load_dotenv
 
     load_dotenv()
