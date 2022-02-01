@@ -11,7 +11,7 @@ class DeploymentEnv(Enum):
     Production = "production"
 
 
-DEPLOYMENT_ENV = getenv("DEPLOYMENT_ENV", DeploymentEnv.Production.value)
+DEPLOYMENT_ENV = getenv("DEPLOYMENT_ENV", DeploymentEnv.Development.value)
 logger.debug(f"Deployment env: {DEPLOYMENT_ENV}")
 
 if DEPLOYMENT_ENV == DeploymentEnv.Development.value:
