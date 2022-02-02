@@ -18,13 +18,18 @@ client = Hedera.get_client(
 
 # Load root account
 root_account: HederaAccount = HederaAccount(
-    client, account_id=root_account_id, private_key=root_private_key
+    client=client,
+    account_id=root_account_id,
+    private_key=root_private_key,
 )
 logger.info(f"Root account: {root_account}")
 logger.info("\n\n")
 
 # Create a new account
-new_account: HederaAccount = HederaAccount(client, initial_balance=900_000)
+new_account: HederaAccount = HederaAccount(
+    client=client,
+    initial_balance=900_000,
+)
 logger.info(f"New account: {new_account}")
 logger.info("\n\n")
 
