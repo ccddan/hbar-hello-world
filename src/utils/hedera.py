@@ -1,5 +1,5 @@
-from typing import Optional
 from enum import Enum
+from typing import Optional
 
 from hedera import (
     AccountBalance,
@@ -45,12 +45,14 @@ class Hedera:
     @staticmethod
     def get_client(
         account_id: Optional[AccountId] = None,
-        private_key: Optional[PrivateKey] = None
+        private_key: Optional[PrivateKey] = None,
     ) -> Client:
         logger.debug("Hedera::get_client - create account_id")
-        _account_id: AccountId = (
-            account_id if account_id else Hedera.load_account_id()
-        )
+
+        if account_id:
+            _account_id: AccountId = account_id
+        else:
+            _account_id: AccountId = Hedera.load_account_id()
 
         logger.debug("Hedera::get_client - create account_id")
         private_key: PrivateKey = (
@@ -106,15 +108,15 @@ class HederaAccount:
             self.private_key: PrivateKey = PrivateKey.generate()
             self.public_key: PublicKey = self.private_key.getPublicKey()
 
-            tx_resp: TransactionResponse = (
+            txr: TransactionResponse = (
                 AccountCreateTransaction()
                 .setKey(self.public_key)
                 .setInitialBalance(Hbar.fromTinybars(initial_balance))
                 .execute(client)
             )
-            self.node_id: AccountId = tx_resp.nodeId
+            self.node_id: AccountId = txr.nodeId
 
-            tx_receipt: TransactionReceipt = tx_resp.getReceipt(self.client)
+            tx_receipt: TransactionReceipt = txr.getReceipt(self.client)
             self.account_id: AccountId = tx_receipt.accountId
             logger.debug(
                 f"""HederaAccount::init - new account id: \
@@ -124,7 +126,9 @@ class HederaAccount:
     def get_balance(self):
         balance: AccountBalance = (
             AccountBalanceQuery()
-            .setAccountId(self.account_id)
+            .setAccountId(
+                self.account_id,
+            )
             .execute(self.client)
         )
         logger.debug(
@@ -167,12 +171,10 @@ class HederaAccount:
     # Overridden methods
     def __iter__(self):
         yield "account_id", self.account_id.toString()
-        yield "private_key", f"""{self.private_key.toString()[:5]}...\
-        {self.private_key.toString()[-5:]}"""
-        yield "public_key", self.public_key.toString()
+        yield "private_key", f"""{self.private_key.toString()[:5]}...{self.private_key.toString()[-5:]}"""
+        yield "public_key", f"""{self.public_key.toString()[:5]}...{self.public_key.toString()[-5:]}"""
         yield "balance", self.get_balance().hbars.toString()
-        yield "node_id", f"""\
-        {self.node_id.toString() if self.node_id else self.node_id}"""
+        yield "node_id", f"""{self.node_id.toString() if self.node_id else self.node_id}"""
 
     def __str__(self) -> str:
         return f"{dict(self)}"
