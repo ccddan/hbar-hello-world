@@ -6,17 +6,25 @@ from hedera import (
     AccountBalanceQuery,
     AccountCreateTransaction,
     AccountId,
+    AccountInfo,
+    AccountInfoQuery,
     Client,
     Hbar,
     PrivateKey,
     PublicKey,
+    TokenCreateTransaction,
+    TokenSupplyType,
+    TokenType,
     TransactionReceipt,
     TransactionResponse,
     TransferTransaction,
 )
+from jnius import autoclass
 
 from config import DeploymentEnv, config
 from utils import get_logger
+
+Collections = autoclass("java.util.Collections")
 
 logger = get_logger(ctx=__name__)
 
@@ -71,7 +79,8 @@ class Hedera:
         logger.debug("Hedera::get_client - set operator")
         client.setOperator(_account_id, private_key)
 
-        client.setMaxTransactionFee(Hbar(HbarDenominations.HBAR.value))
+        # IMPORTANT: let client to determine tx fee
+        # client.setMaxTransactionFee(Hbar(HbarDenominations.HBAR.value * 10))
 
         logger.debug(f"Hedera::get_client - client: {client.toString()}")
         return client
@@ -102,7 +111,7 @@ class HederaAccount:
             self.account_id = account_id
             self.private_key = private_key
             self.public_key = self.private_key.getPublicKey()
-            self.node_id: Optional[AccountId] = None
+            self.node_id = None
 
         else:
             self.private_key: PrivateKey = PrivateKey.generate()
@@ -168,6 +177,15 @@ class HederaAccount:
     def tx_receipt(self, txr: TransactionResponse):
         return txr.getReceipt(self.client)
 
+    def get_info(self) -> AccountInfo:
+        return (
+            AccountInfoQuery()
+            .setAccountId(
+                self.account_id,
+            )
+            .execute(self.client)
+        )
+
     # Overridden methods
     def __iter__(self):
         yield "account_id", self.account_id.toString()
@@ -178,3 +196,47 @@ class HederaAccount:
 
     def __str__(self) -> str:
         return f"{dict(self)}"
+
+
+class HTS:
+    @staticmethod
+    def create(
+        client: Client,
+        account: HederaAccount,
+        name: str,
+        symbol: str,
+        decimals: int = 0,
+        initial_supply: int = 0,
+        max_supply: int = 1_000_000_000,
+    ):
+        tx: TokenCreateTransaction = (
+            TokenCreateTransaction()
+            .setTokenName(name)
+            .setTokenSymbol(symbol)
+            .setTokenType(TokenType.FUNGIBLE_COMMON)
+            .setSupplyType(TokenSupplyType.FINITE)
+            .setDecimals(decimals)
+            .setInitialSupply(initial_supply)
+            .setMaxSupply(max_supply)
+            .setTreasuryAccountId(account.account_id)
+            .setAdminKey(account.public_key)
+            .setFreezeKey(account.public_key)
+            .setWipeKey(account.public_key)
+            .setKycKey(account.public_key)
+            .setSupplyKey(account.public_key)
+            .setFreezeDefault(False)
+            .freezeWith(client)
+        )
+
+        if account.node_id:
+            tx.setNodeAccountIds(Collections.singletonList(account.node_id))
+
+        # tx.freezeWith(client)
+        tx.sign(account.private_key)
+
+        txr: TransactionResponse = tx.execute(client)
+
+        return {
+            "tokenId": txr.getReceipt(client).tokenId,
+            "nodeId": txr.nodeId,
+        }
